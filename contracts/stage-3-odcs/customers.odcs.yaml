@@ -1,0 +1,62 @@
+# contracts, stage 3: the same contract in the Open Data Contract Standard (ODCS) v3.2.0.
+# Validated against the official JSON schema (odcs-json-schema-v3.2.0.json) on 11 Nov 2026.
+# Names, people and URLs are made up. Version 0.1.0, license MIT.
+apiVersion: v3.2.0
+kind: DataContract
+id: shop-customers
+name: customers
+version: 1.0.0   # a change in meaning is a major version: 2.0.0
+status: active
+domain: shop
+description:
+  purpose: One row per customer, with the flags the weekly review and the agents read.
+  limitations: Test and internal accounts are in the table and carry is_test = true. Leave them out of every number.
+team:
+  name: shop-backend
+  members:
+    - username: a.cohen
+      role: producer owner   # owns the field at its source and every change to it
+    - username: m.levi
+      role: definition owner # decides what the flag means
+schema:
+  - name: customers
+    physicalName: customers
+    description: One row per customer.
+    properties:
+      - name: is_active_customer
+        businessName: Active customer
+        logicalType: boolean
+        physicalType: boolean
+        required: true
+        description: >-
+          The customer placed an order in the 90 days before the flag was computed (flag_computed_at, UTC).
+          Test accounts are never counted. Changing the window, the event or who is counted is a change in
+          meaning and a major version.
+        authoritativeDefinitions:
+          - url: https://example.com/contracts/meanings#active-customer
+            type: businessDefinition
+        quality:
+          - type: sql
+            name: definition_drift_is_active_customer
+            description: The stored flag agrees with the written rule, recomputed from last_order_at.
+            dimension: accuracy
+            severity: error
+            query: |
+              select count(*) from customers
+              where is_test is not true
+                and is_active_customer is distinct from
+                    coalesce(last_order_at >= flag_computed_at - interval '90 days', false)
+            mustBe: 0
+      - name: last_order_at
+        logicalType: timestamp
+        physicalType: timestamp
+        description: Time of the customer's most recent order, UTC. Empty when the customer never ordered.
+      - name: flag_computed_at
+        logicalType: timestamp
+        physicalType: timestamp
+        required: true
+        description: When is_active_customer was last computed, UTC.
+      - name: is_test
+        logicalType: boolean
+        physicalType: boolean
+        description: True for test and internal accounts.

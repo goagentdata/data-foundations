@@ -1,0 +1,13 @@
+Definition drift check, expected results on the sample data.
+Tested 11 Nov 2026 in SQLite (a typed table, and a CSV loaded as text) and in a local PostgreSQL 16. All gave the same counts.
+
+sample/customers.csv (flag follows the contract: order in the last 90 days)
+  customers_checked 36 | disagreeing 0 | disagreeing_pct 0.00
+  flag is true for 15 of 36 real customers
+
+sample/customers_after_change.csv (same customers, same column, flag quietly changed to: order in the last 12 months)
+  customers_checked 36 | disagreeing 15 | disagreeing_pct 41.67
+  flag is true for 30 of 36 real customers
+
+Both files have 40 rows: 36 real customers and 4 test accounts (is_test = 1), which the check leaves out.
+The column name, the type and the not-null rule are identical in both files. Only the meaning changed.

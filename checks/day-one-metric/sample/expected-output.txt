@@ -1,0 +1,47 @@
+$ python3 day_one_metric.py --users users.csv --events events.csv --event recipe_cooked --as-of 2026-11-16
+Day-one metric: core action recipe_cooked, week cohorts, as of 2026-11-16
+Insiders left out: 12 of 60 signups are flagged is_internal.
+
+Cohort 2026-10-26 (signups 2026-10-26 to 2026-11-01, closed on 2026-11-16)
+  users                    48
+  period 1 (days 0 to 6)   16 of 48    33.3%   95% interval 21.7 to 47.5
+  period 2 (days 7 to 13)  15 of 48    31.3%   95% interval 19.9 to 45.3
+
+Left out because the cohort is not closed yet: 0 signups in 0 cohorts.
+
+$ python3 day_one_metric.py --users users.csv --events events.csv --event recipe_cooked --as-of 2026-11-16 --include-insiders
+Day-one metric: core action recipe_cooked, week cohorts, as of 2026-11-16
+WARNING: INSIDERS ARE INCLUDED (12 of 60 signups are flagged is_internal). This number is not a real-user number.
+
+Cohort 2026-10-26 (signups 2026-10-26 to 2026-11-01, closed on 2026-11-16)
+  users                    60
+  period 1 (days 0 to 6)   28 of 60    46.7%   95% interval 34.6 to 59.1
+  period 2 (days 7 to 13)  27 of 60    45.0%   95% interval 33.1 to 57.5
+
+Left out because the cohort is not closed yet: 0 signups in 0 cohorts.
+
+$ python3 day_one_metric.py --users users.csv --events events.csv --event recipe_cooked --as-of 2026-11-15
+Day-one metric: core action recipe_cooked, week cohorts, as of 2026-11-15
+Insiders left out: 12 of 60 signups are flagged is_internal.
+
+No closed cohort at this as-of date.
+Left out because the cohort is not closed yet: 60 signups in 1 cohort (48 real, 12 insiders).
+
+$ python3 day_one_metric.py --users users.csv --events events.csv --event recipe_cooked --as-of 2026-11-16 --by-source
+Day-one metric: core action recipe_cooked, week cohorts, as of 2026-11-16
+Insiders left out: 12 of 60 signups are flagged is_internal.
+
+Cohort 2026-10-26 (signups 2026-10-26 to 2026-11-01, closed on 2026-11-16)
+  users                    48
+  period 1 (days 0 to 6)   16 of 48    33.3%   95% interval 21.7 to 47.5
+  period 2 (days 7 to 13)  15 of 48    31.3%   95% interval 19.9 to 45.3
+  source invite: 30 users, period 1 10, period 2 10
+  period 1                 10 of 30    33.3%   95% interval 19.2 to 51.2
+  period 2                 10 of 30    33.3%   95% interval 19.2 to 51.2
+  source store: 18 users, period 1 6, period 2 5
+  period 1                  6 of 18    33.3%   95% interval 16.3 to 56.3
+  period 2                  5 of 18    27.8%   95% interval 12.5 to 50.9
+  small cohort: read the counts, not the percentage
+
+Left out because the cohort is not closed yet: 0 signups in 0 cohorts.
+
