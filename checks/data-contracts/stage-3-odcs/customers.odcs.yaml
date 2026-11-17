@@ -1,6 +1,6 @@
-# contracts, stage 3: the same contract in the Open Data Contract Standard (ODCS) v3.2.0.
+# data-contracts, stage 3: the same contract in the Open Data Contract Standard (ODCS) v3.2.0.
 # Validated against the official JSON schema (odcs-json-schema-v3.2.0.json) on 11 Nov 2026.
-# Names, people and URLs are made up. Version 0.1.0, license MIT.
+# Names, people and URLs are made up. Template file version 0.1.1 (data-contracts kit), license MIT. The contract's own version is the version field below.
 apiVersion: v3.2.0
 kind: DataContract
 id: shop-customers

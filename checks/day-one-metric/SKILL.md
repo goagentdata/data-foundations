@@ -9,7 +9,8 @@ Two counts over the same group of real sign-ups: did the core action within 7 da
 
 ## Safe defaults
 - Read-only. Use a replica or an export. Never write to production.
-- Any change goes through a pull request a person approves. Never commit it yourself.
+- Any change goes through a pull request a person approves: commit only on a new branch, open the pull request, and never merge it or push to the main branch yourself.
+- Export or read only the columns the check needs (ids, timestamps, source, the insider flag, the event name). Never export, print or paste emails, names or other personal data. To build the insider flag from an email domain, compute it inside the database and export only the flag.
 - Never change a definition without approval from its named owner.
 - You guide the work. Read-only database access is what enforces it. If you were given write access, say so in the report.
 
@@ -18,10 +19,10 @@ Two counts over the same group of real sign-ups: did the core action within 7 da
 2. Find the insider flag, a column marking the team, friends and test accounts. If it is missing, do not add it. Propose it as a pull request, with how the flag will be filled (team email domain, list of ids, test devices), and run with the flag unavailable only if a person says so. State plainly that the number then includes insiders.
 3. Ask a person to confirm the core action event name. Do not guess it, and do not use an app open or a finished welcome tour. Record the answer.
 4. Choose the window: week for products used often, month for products used monthly. Ask a person if unsure.
-5. Run on a replica or export. Options: `cohort.sqlite.sql` or `cohort.postgres.sql` (change the as-of date and the event name only), or `python3 day_one_metric.py --users users.csv --events events.csv --event <name> --as-of <YYYY-MM-DD>`. Use `--by-source` only once a source has a few dozen users.
+5. Run on a replica or export. Options: `cohort.sqlite.sql` or `cohort.postgres.sql` (change the as-of date and the event name only; for SQLite on CSV exports without the sqlite3 command line, use `python3 tools/run_sqlite.py` from this repository), or `python3 day_one_metric.py --users users.csv --events events.csv --event <name> --as-of <YYYY-MM-DD>`. Use `--by-source` only once a source has a few dozen users.
 6. First run the check on `sample/` and compare with `sample/expected-output.txt`. If it does not match, stop and report.
 7. Report a table: one row per closed cohort with cohort size, counts beside percentages, and the 95 percent interval. Use the calculator for intervals.
-8. Name what was left out: cohorts not yet closed (the signup count), and insiders removed (the count). Say a cohort under 30 users should be read by counts, not percentage.
+8. Name what was left out: cohorts not yet closed (the signup count, from the calculator), and insiders removed (the count). If the calculator stops on a blank insider flag or an unknown event name, report that and ask; do not fill the flag or pick another event yourself. Say a cohort under 30 users should be read by counts, not percentage.
 9. Close the report with three lines: the event and window used, who owns the insider list, and who owns the definition. If nobody does, write "owner needed" and ask for a name.
 
 ## Never

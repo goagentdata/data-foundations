@@ -4,8 +4,8 @@
 name: day-one-metric
 stage: Before launch, First paying customers, Growing with a first data person
 business_model: all
-version: 0.1.0
-last_reviewed: 2026-11-07
+version: 0.1.1
+last_reviewed: 2026-11-17
 license: MIT
 check: python3 day_one_metric.py --users sample/users.csv --events sample/events.csv --event recipe_cooked --as-of 2026-11-16
        prints cohort 2026-10-26 with 48 users, period 1 16 of 48 (33.3%), period 2 15 of 48 (31.3%)
@@ -50,7 +50,7 @@ Check: ask a teammate to name the event behind the number. If they cannot, write
 Guardrail: counts beside percentages, an interval around each percentage, and a note on small cohorts.
 Check: the calculator prints a 95 percent interval and a "small cohort" line under 30 users. If moving two users changes your conclusion, do not act on it yet.
 
-One more trap sits in the timing. A signup week is only reported once every member's window has closed, so a half-finished week cannot sit next to a full one. The calculator and both queries apply this rule and say how many signups they left out.
+One more trap sits in the timing. A signup week is only reported once every member's window has closed, so a half-finished week cannot sit next to a full one. The calculator and both queries apply this rule. Only the calculator says how many signups it left out; the queries simply do not show the open week.
 
 ## Spreadsheet path (no code)
 
@@ -73,12 +73,25 @@ Two queries, same logic: `cohort.sqlite.sql` (tested on the sample in SQLite) an
 
 Change two things: the as-of date in the `params` line and the event name `recipe_cooked`. Weeks start on Monday. For a business product, replace users with accounts. Run them on a replica or an export, never on the production primary.
 
+On two CSV exports, with Python 3 and nothing else, from the repository root:
+
 ```
-sqlite3 sample.db < cohort.sqlite.sql
+python3 tools/run_sqlite.py --sql checks/day-one-metric/cohort.sqlite.sql --csv users=checks/day-one-metric/sample/users.csv --csv events=checks/day-one-metric/sample/events.csv
+```
+
+With the sqlite3 command line (a plain `.import` loads every column as text, which the query handles), then Postgres:
+
+```
+sqlite3 sample.db
+.mode csv
+.import checks/day-one-metric/sample/users.csv users
+.import checks/day-one-metric/sample/events.csv events
+.read checks/day-one-metric/cohort.sqlite.sql
+
 psql -f cohort.postgres.sql
 ```
 
-On the sample, both return one row: cohort 2026-10-26, size 48, activated 16, active in period 2 15. The queries do not compute intervals. The calculator does.
+On the sample, both return one row: cohort 2026-10-26, size 48, activated 16, active in period 2 15. Zero rows means no week has closed at the as-of date, or the tables were not loaded: check both before reading it as a result. In SQLite a blank or unknown `is_internal` is not counted as a real user. The queries do not compute intervals. The calculator does.
 
 ## Calculator path (Python, standard library only)
 
@@ -86,7 +99,7 @@ On the sample, both return one row: cohort 2026-10-26, size 48, activated 16, ac
 python3 day_one_metric.py --users users.csv --events events.csv --event recipe_cooked --as-of 2026-11-16
 ```
 
-Options: `--period week|month` (default week), `--by-source`, and `--include-insiders` (off by default, and loud when on). Run `python3 day_one_metric.py --help` for the input format and more examples. The script reads two files and prints text. It writes nothing. The month rule is documented in `--help`: a month cohort is reported once its start plus 60 days plus the month length has passed.
+Options: `--period week|month` (default week), `--by-source`, and `--include-insiders` (off by default, and loud when on). It stops with a plain message, not a wrong number, when an `is_internal` value is blank or unknown, or when no event has the name you gave (it lists the names it found). Timestamps with an offset such as `+00:00` (Postgres exports) are converted to UTC. Run `python3 day_one_metric.py --help` for the input format and more examples. The script reads two files and prints text. It writes nothing. The month rule is documented in `--help`: a month cohort is reported once its start plus 60 days plus the month length has passed.
 
 ## Safe defaults
 

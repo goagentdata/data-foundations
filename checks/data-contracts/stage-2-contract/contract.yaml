@@ -1,7 +1,7 @@
-# contracts, stage 2: one block per key field, with a check that tests the meaning.
+# data-contracts, stage 2: one block per key field, with a check that tests the meaning.
 # Our own small layout, not a standard. Move to stage 3 (ODCS) when a data person owns the file.
-# Names and people are made up. Version 0.1.0, license MIT.
-contract_version: 1.0.0        # a change in meaning is a major version: 2.0.0
+# Names and people are made up. Template file version 0.1.1 (data-contracts kit), license MIT.
+contract_version: 1.0.0        # the version of THIS example contract, not of the kit; a change in meaning is a major version: 2.0.0
 last_reviewed: 2026-11-11
 fields:
   - field: customers.is_active_customer
@@ -12,4 +12,4 @@ fields:
     definition_owner: m.levi     # decides what the flag means
     consumers: [weekly review, investor update, analytics agent]
     change_rule: a change to the window, the event or who is counted is a change in meaning; major version, owners approve, consumers told before it ships
-    check: contracts/drift_check.postgres.sql   # must return disagreeing = 0, or within a tolerance the owners agree
+    check: drift_check.postgres.sql   # path relative to this file; must return disagreeing = 0 (and unreadable_rows = 0 in SQLite), or within a tolerance the owners agree

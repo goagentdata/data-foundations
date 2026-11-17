@@ -1,4 +1,4 @@
--- day-one-metric, Postgres version. Version 0.1.0, last reviewed 2026-11-07, license MIT.
+-- day-one-metric, Postgres version. Version 0.1.1, last reviewed 2026-11-17, license MIT.
 -- Status: tested on a local PostgreSQL 16 with the sample data, 7 Nov 2026. Not run on a live production database.
 -- Expected result on the sample: cohort_week 2026-10-26, cohort_size 48, activated 16 (33.3), active_week2 15 (31.3)
 -- Read-only: one select, no writes. Run it on a replica or an export, never on the primary.

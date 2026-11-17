@@ -5,21 +5,24 @@ Two counts over the same group of real sign-ups:
   period 1: did the core action in the first 7 days after their own signup (month: 30 days)
   period 2: did the core action in days 7 to 13 after their own signup (month: days 30 to 59)
 
-License: MIT. Part of goagentdata/data-foundations, check day-one-metric, version 0.1.0.
+License: MIT. Part of goagentdata/data-foundations, check day-one-metric, version 0.1.1.
 """
 import argparse
 import csv
 import math
 import sys
 from collections import OrderedDict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 EPILOG = """
 input files
   users.csv   columns: user_id, signed_up_at, source, is_internal   (is_internal: 0/1 or true/false)
   events.csv  columns: user_id, event_name, occurred_at
-  Timestamps look like 2026-10-26 09:00:00 or 2026-10-26T09:00:00, with an optional trailing Z.
-  All timestamps are treated as the same timezone. Extra columns are ignored.
+  Timestamps look like 2026-10-26 09:00:00 or 2026-10-26T09:00:00, with an optional trailing Z or an
+  offset such as +00:00 or +03:00 (Postgres timestamptz exports). Timestamps with an offset are converted
+  to UTC; timestamps without one are read as UTC. Extra columns are ignored.
+  A blank or unknown is_internal stops the run: fill the flag rather than let a test account count as real.
+  If no row in the events file has the --event name, the run stops and lists the names it did find.
 
 how a cohort is built
   Week: signups are grouped by the Monday of their signup week. Month: by calendar month.
@@ -39,15 +42,21 @@ The script never writes to a database or to any file. Run it on an export or a r
 """
 
 TRUE = {"1", "true", "t", "yes", "y"}
-FALSE = {"0", "false", "f", "no", "n", ""}
+FALSE = {"0", "false", "f", "no", "n"}
 
 
-def parse_ts(text):
+def parse_ts(text, where=""):
     s = text.strip()
     if s.endswith("Z") or s.endswith("z"):
-        s = s[:-1]
-    s = s.replace("T", " ")
-    return datetime.fromisoformat(s)
+        s = s[:-1] + "+00:00"
+    s = s.replace("T", " ", 1)
+    try:
+        t = datetime.fromisoformat(s)
+    except ValueError:
+        raise ValueError("cannot read the timestamp %r%s; use 2026-10-26 09:00:00" % (text, where))
+    if t.tzinfo is not None:
+        t = t.astimezone(timezone.utc).replace(tzinfo=None)
+    return t
 
 
 def parse_flag(text, line):
@@ -56,6 +65,8 @@ def parse_flag(text, line):
         return True
     if v in FALSE:
         return False
+    if not v:
+        raise ValueError("is_internal is blank in the users file, row %d. Fill it with 0 (real user) or 1 (team, friend or test account); a blank is not read as a real user" % line)
     raise ValueError("is_internal must be 0/1 or true/false, got %r (users file, row %d)" % (text, line))
 
 
@@ -148,15 +159,24 @@ def main(argv=None):
             if uid in users:
                 dupes += 1
                 continue
-            users[uid] = (parse_ts(r["signed_up_at"]), r["source"].strip() or "(none)", parse_flag(r["is_internal"], i))
+            users[uid] = (parse_ts(r["signed_up_at"], " (users file, row %d)" % i), r["source"].strip() or "(none)", parse_flag(r["is_internal"], i))
         times = {}
-        for r in erows:
-            if r["event_name"].strip() != a.event:
+        matched = 0
+        seen = {}
+        for j, r in enumerate(erows, start=2):
+            name = r["event_name"].strip()
+            if name != a.event:
+                seen[name] = seen.get(name, 0) + 1
                 continue
+            matched += 1
             uid = r["user_id"].strip()
             if uid in users:
-                times.setdefault(uid, []).append(parse_ts(r["occurred_at"]))
-    except (OSError, ValueError) as e:
+                times.setdefault(uid, []).append(parse_ts(r["occurred_at"], " (events file, row %d)" % j))
+        if matched == 0:
+            top = sorted(seen.items(), key=lambda kv: -kv[1])[:10]
+            raise ValueError("no row in the events file has event_name %r. Names found: %s. Check the spelling with the person who owns the definition" % (
+                a.event, ", ".join("%s (%d)" % kv for kv in top) or "none"))
+    except (OSError, ValueError, TypeError) as e:
         print("error: %s" % e, file=sys.stderr)
         return 2
 
@@ -166,6 +186,7 @@ def main(argv=None):
     insiders = sum(1 for u in users.values() if u[2])
 
     print("Day-one metric: core action %s, %s cohorts, as of %s" % (a.event, a.period, as_of.isoformat()))
+    print("Core action rows in the events file: %d (%d users did it at least once)." % (matched, len(times)))
     if a.include_insiders:
         print("WARNING: INSIDERS ARE INCLUDED (%d of %d signups are flagged is_internal). This number is not a real-user number." % (insiders, len(users)))
     else:
