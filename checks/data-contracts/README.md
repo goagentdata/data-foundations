@@ -1,14 +1,14 @@
-# contracts
+# data-contracts
 
 ```
-name: contracts
+name: data-contracts
 stage: Before launch, First paying customers, Growing with a first data person
 business_model: all
-version: 0.1.0
-last_reviewed: 2026-11-11
+version: 0.1.1
+last_reviewed: 2026-11-17
 license: MIT
 check: run stage-2-contract/drift_check.sqlite.sql on sample/customers.csv, then on sample/customers_after_change.csv
-       prints 36 checked, 0 disagreeing, then 36 checked, 15 disagreeing (41.67)
+       prints 36 checked, 0 disagreeing, then 36 checked, 15 disagreeing (41.67), unreadable_rows 0 both times
 ```
 
 ## What is it, in plain words?
@@ -31,21 +31,27 @@ Start with the fields a decision depends on: paying, active, churned, revenue. A
 
 **Without a coding agent.** Copy `stage-1-meanings/meanings.md`, replace the two example fields with yours, and keep it where the team already looks. If you use a chat assistant with exports, paste the file into its instructions.
 
-**With a coding agent.** Copy the files for your stage, and `SKILL.md`, into a `contracts/` folder in the application repository, and point the agent at `contracts/SKILL.md` from your agent instructions file. Copy `sample/` as well if you want the agent to prove the check on the sample first. The skill tells the agent to read the meaning before it uses a field, to stop and ask both owners before a change in meaning, and to run the check read-only. The skill guides the agent. Required reviewers on the contract file and read-only database access are what enforce it.
+**With a coding agent.** Copy the files for your stage, and `SKILL.md`, into a `contracts/` folder in the application repository (flat: the contract and the check side by side), and point the agent at `contracts/SKILL.md` from your agent instructions file (see the top-level README for the exact line). Copy `sample/` as well if you want the agent to prove the check on the sample first. The skill tells the agent to read the meaning before it uses a field, to stop and ask both owners before a change in meaning, and to run the check read-only. The skill guides the agent. Required reviewers on the contract file and read-only database access are what enforce it.
 
 **The check.** Change three things in the SQL: the table, the flag column and the rule line. Run it in the producer's pipeline against a replica or a nightly export, before a change merges or nightly, so the person or agent who made the change sees it fail.
 
-To try it on the sample in SQLite:
+To try it on the sample, from the repository root, with Python 3 and nothing else:
+
+```
+python3 tools/run_sqlite.py --sql checks/data-contracts/stage-2-contract/drift_check.sqlite.sql --csv customers=checks/data-contracts/sample/customers.csv
+python3 tools/run_sqlite.py --sql checks/data-contracts/stage-2-contract/drift_check.sqlite.sql --csv customers=checks/data-contracts/sample/customers_after_change.csv
+```
+
+Or with the sqlite3 command line (a plain `.import` loads every column as text, which the query handles):
 
 ```
 sqlite3 sample.db
-create table customers(customer_id integer, last_order_at text, is_active_customer integer, is_test integer, flag_computed_at text);
 .mode csv
-.import --skip 1 sample/customers.csv customers
-.read stage-2-contract/drift_check.sqlite.sql
+.import checks/data-contracts/sample/customers.csv customers
+.read checks/data-contracts/stage-2-contract/drift_check.sqlite.sql
 ```
 
-If `customers_checked` comes back as 0, the check did not run. Do not read that as a pass.
+Flags may be 1/0, true/false, t/f or yes/no. Any other value, blank included, is counted in `unreadable_rows` and left out. If `customers_checked` is 0, or `unreadable_rows` is above 0, the check did not run cleanly. Do not read either as a pass.
 
 ## What it does not do
 

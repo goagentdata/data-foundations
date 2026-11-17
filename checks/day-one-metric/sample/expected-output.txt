@@ -1,5 +1,6 @@
 $ python3 day_one_metric.py --users users.csv --events events.csv --event recipe_cooked --as-of 2026-11-16
 Day-one metric: core action recipe_cooked, week cohorts, as of 2026-11-16
+Core action rows in the events file: 55 (36 users did it at least once).
 Insiders left out: 12 of 60 signups are flagged is_internal.
 
 Cohort 2026-10-26 (signups 2026-10-26 to 2026-11-01, closed on 2026-11-16)
@@ -11,6 +12,7 @@ Left out because the cohort is not closed yet: 0 signups in 0 cohorts.
 
 $ python3 day_one_metric.py --users users.csv --events events.csv --event recipe_cooked --as-of 2026-11-16 --include-insiders
 Day-one metric: core action recipe_cooked, week cohorts, as of 2026-11-16
+Core action rows in the events file: 55 (36 users did it at least once).
 WARNING: INSIDERS ARE INCLUDED (12 of 60 signups are flagged is_internal). This number is not a real-user number.
 
 Cohort 2026-10-26 (signups 2026-10-26 to 2026-11-01, closed on 2026-11-16)
@@ -22,6 +24,7 @@ Left out because the cohort is not closed yet: 0 signups in 0 cohorts.
 
 $ python3 day_one_metric.py --users users.csv --events events.csv --event recipe_cooked --as-of 2026-11-15
 Day-one metric: core action recipe_cooked, week cohorts, as of 2026-11-15
+Core action rows in the events file: 55 (36 users did it at least once).
 Insiders left out: 12 of 60 signups are flagged is_internal.
 
 No closed cohort at this as-of date.
@@ -29,6 +32,7 @@ Left out because the cohort is not closed yet: 60 signups in 1 cohort (48 real, 
 
 $ python3 day_one_metric.py --users users.csv --events events.csv --event recipe_cooked --as-of 2026-11-16 --by-source
 Day-one metric: core action recipe_cooked, week cohorts, as of 2026-11-16
+Core action rows in the events file: 55 (36 users did it at least once).
 Insiders left out: 12 of 60 signups are flagged is_internal.
 
 Cohort 2026-10-26 (signups 2026-10-26 to 2026-11-01, closed on 2026-11-16)
@@ -44,4 +48,3 @@ Cohort 2026-10-26 (signups 2026-10-26 to 2026-11-01, closed on 2026-11-16)
   small cohort: read the counts, not the percentage
 
 Left out because the cohort is not closed yet: 0 signups in 0 cohorts.
-

@@ -1,4 +1,4 @@
--- contracts, stage 2: definition drift check, Postgres version. Version 0.1.0, license MIT.
+-- data-contracts, stage 2: definition drift check, Postgres version. Version 0.1.1, license MIT.
 -- Status: tested on a local PostgreSQL 16 with the sample data, 11 Nov 2026. Not run on a live production database.
 -- Expected on sample/customers.csv: customers_checked 36, disagreeing 0, disagreeing_pct 0.00
 -- Expected on sample/customers_after_change.csv: customers_checked 36, disagreeing 15, disagreeing_pct 41.67

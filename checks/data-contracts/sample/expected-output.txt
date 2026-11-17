@@ -1,5 +1,6 @@
 Definition drift check, expected results on the sample data.
-Tested 11 Nov 2026 in SQLite (a typed table, and a CSV loaded as text) and in a local PostgreSQL 16. All gave the same counts.
+Tested 11 Nov 2026 in SQLite (a typed table, and a CSV loaded as text) and in a local PostgreSQL 16; re-tested in SQLite 17 Nov 2026,
+including flags written as true/false. All gave the same counts. The SQLite version adds unreadable_rows (0 on both files).
 
 sample/customers.csv (flag follows the contract: order in the last 90 days)
   customers_checked 36 | disagreeing 0 | disagreeing_pct 0.00
